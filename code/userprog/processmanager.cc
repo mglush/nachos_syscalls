@@ -99,15 +99,17 @@ void ProcessManager::join(int pid) {
     }
 
     lockForOtherProcess->Acquire();
-    //BEIGN HINTS
+    //BEGIN HINTS
     //Increment  processesWaitingOnPID[pid].
+    processesWaitingOnPID[pid]++;
     //Conditional waiting on conditionForOtherProcess
+    while (pcbList[pid]->status == 2) {
+        conditionForOtherProcess->Wait(lockForOtherProcess);
+    }
+    processesWaitingOnPID[pid]--;
     //Decrement   processesWaitingOnPID[pid].
     //END HINTS
     
-   
-  
-
     if (processesWaitingOnPID[pid] == 0) {
         processesBitMap.Clear(pid);
     }
@@ -130,9 +132,6 @@ void ProcessManager::broadcast(int pid) {
         // BEGIN HINTS
         // Wake up others
         // END HINTS
-        
-       
-      
     }
 }
 

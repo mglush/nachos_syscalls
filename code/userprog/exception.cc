@@ -562,11 +562,7 @@ void writeImpl() {
         //END HINTS 
        // See useropenfile.h and pcb.cc on UserOpenFile class and its methods.
        // See sysopenfile.h and openfilemanager.cc for SysOpenFile class and its methods.
-    
-
-
-    
-        
+       
     }
     delete [] buffer;
 }
