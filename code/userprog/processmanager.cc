@@ -130,7 +130,10 @@ void ProcessManager::broadcast(int pid) {
 
     if (condition != NULL) { // somebody is waiting on this process
         // BEGIN HINTS
+
+        // Wake up others
         condition->Broadcast(lock);
+        
         // END HINTS
     }
 }
