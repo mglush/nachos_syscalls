@@ -567,9 +567,6 @@ void writeImpl() {
         userFile->currOffsetInFile += actualBytesWritten;
 
         //END HINTS 
-        
-        // See useropenfile.h and pcb.cc on UserOpenFile class and its methods.
-        // See sysopenfile.h and openfilemanager.cc for SysOpenFile class and its methods.
     }
     delete [] buffer;
 }
@@ -640,18 +637,22 @@ void closeImpl() {
     if (userFile == NULL) {
         return;
     } else {
-       // BEGIN HINTS
-       // Use openFileManager's getFile method to get a pointer to the system-wide SysOpenFile  data structure
-       // Call the close method in SysOpenFile
-       // Remove the file  in the open file list of this process PCB using PCB::removeFILE().
-       // END HINTS
-       // See useropenfile.h and pcb.cc on UserOpenFile class and its methods.
-       // See sysopenfile.h and openfilemanager.cc for SysOpenFile class and its methods.
+        // BEGIN HINTS
 
-       
+        // Use openFileManager's getFile method to get a pointer to the system-wide SysOpenFile  data structure
+        int index = 0;
+        SysOpenFile* currSysFile = openFileManager->getFile(userFile->fileName, index);
         
-       
-      
+        // Call the close method in SysOpenFile
+        currSysFile->closedBySingleProcess();
+
+        // Remove the file  in the open file list of this process PCB using PCB::removeFILE().
+        currentThread->space->getPCB()->removeFile(fileID);
+
+        // END HINTS
+        
+        // See useropenfile.h and pcb.cc on UserOpenFile class and its methods.
+        // See sysopenfile.h and openfilemanager.cc for SysOpenFile class and its methods.
     }
 }
 
