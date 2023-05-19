@@ -471,15 +471,10 @@ int openImpl(char* filename) {
     // Either way, add it to the current PCB's open file list
     UserOpenFile currUserFile;
 
-    strcpy(currUserFile.fileName, filename);
+    // we just need to set up the UserOpenFile data structure, everything else for open has been implemented already...
+    currUserFile.fileName = filename;
     currUserFile.indexInSysOpenFileList = index;
-   //BEGIN HINTS 
-   //Set up this UserOpenFile data structure
-   // currUserFile.indeInSysOpenFileList should point to the index from openFileManager.
-   // currUserFile.currOffsetInFile is the offset position of the current file openned
-   // END HINTS
-   // See useropenfile.h and pcb.cc on UserOpenFile class and its methods.
-   // See sysopenfile.h and openfilemanager.cc for SysOpenFile class and its methods.
+    currUserFile.currOffsetInFile = 0;
     
     int currFileID = currentThread->space->getPCB()->addFile(currUserFile);
     return currFileID;
@@ -539,7 +534,6 @@ void writeImpl() {
     if (fileID == ConsoleOutput) {
         userReadWrite(writeAddr, buffer, size, USER_WRITE);
         buffer[size] = 0; // always terminate
-        //printf("%s", buffer);
         openFileManager->consoleWriteLock->Acquire();
         for (int i = 0; i < size; ++i)
             UserConsolePutChar(buffer[i]);
@@ -547,23 +541,35 @@ void writeImpl() {
     }
     else {
         buffer = new char[size];
-       //BEGIN HINTS
-       //Fetch data from the user space to this system buffer using  userReadWrite().
-       //END HINTS
+        //BEGIN HINTS
         
+        //Fetch data from the user space to this system buffer using  userReadWrite().
+        userReadWrite(writeAddr, buffer, size, USER_WRITE);
+        buffer[size] = 0;
+        
+        //END HINTS
         
         UserOpenFile* userFile = currentThread->space->getPCB()->getFile(fileID);
         if (userFile == NULL) {
          return;
         }
+        
         //BEGIN HINTS 
+        
         //Use openFileManager->getFile method  to find the openned file structure (SysOpenFile)
+        int index = 0;
+        SysOpenFile* openFileStructure = openFileManager->getFile(userFile->fileName, index);
+        
         //Use SysOpenFile->file's writeAt() to write out the above buffer with size listed.
+        int actualBytesWritten = openFileStructure->file->WriteAt(buffer, size, userFile->currOffsetInFile);
+        
         //Increment the current offset  by the actual number of bytes written.
+        userFile->currOffsetInFile += actualBytesWritten;
+
         //END HINTS 
-       // See useropenfile.h and pcb.cc on UserOpenFile class and its methods.
-       // See sysopenfile.h and openfilemanager.cc for SysOpenFile class and its methods.
-       
+        
+        // See useropenfile.h and pcb.cc on UserOpenFile class and its methods.
+        // See sysopenfile.h and openfilemanager.cc for SysOpenFile class and its methods.
     }
     delete [] buffer;
 }
@@ -574,7 +580,7 @@ void writeImpl() {
 
 int readImpl() {
 
-    //int readAddr = machine->ReadRegister(4);
+    int readAddr = machine->ReadRegister(4);
     int size = machine->ReadRegister(5);
     int fileID = machine->ReadRegister(6);
     char* buffer = new char[size + 1];
@@ -595,22 +601,28 @@ int readImpl() {
         }
 
         //BEGIN HINTS
-        //Now from openFileManger, find the SystemOpenFile data structure for this userFile.
-        //Use ReadAt() to read the file at selected offset to this system buffer buffer[]
-        // Adust the offset in userFile to reflect my current position.
-        // The above few lines of code are very similar to ones in writeImpl()
-        // END HINTS 
-        // See useropenfile.h and pcb.cc on UserOpenFile class and its methods.
-        // See sysopenfile.h and openfilemanager.cc for SysOpenFile class and its methods.
- 
         
-       
-      
-     
-    
+        //Now from openFileManger, find the SystemOpenFile data structure for this userFile.
+        int index = 0;
+        SysOpenFile* openFileStructure = openFileManager->getFile(userFile->fileName, index);
+
+        //Use ReadAt() to read the file at selected offset to this system buffer buffer[]
+        int actualBytesRead = openFileStructure->file->ReadAt(buffer, size, userFile->currOffsetInFile);
+
+        // Adust the offset in userFile to reflect my current position.
+        userFile->currOffsetInFile += actualBytesRead;
+
+        // The above few lines of code are very similar to ones in writeImpl()
+        
+        // END HINTS 
+ 
     }
+
     //BEGIN HINTS
+
     //Now copy data from the system buffer to the targted main memory space using userReadWrite()
+    userReadWrite(readAddr, buffer, size, USER_READ);
+    
     //END HINTS
     
     delete [] buffer;
