@@ -557,8 +557,7 @@ void writeImpl() {
         //BEGIN HINTS 
         
         //Use openFileManager->getFile method  to find the openned file structure (SysOpenFile)
-        int index = 0;
-        SysOpenFile* openFileStructure = openFileManager->getFile(userFile->fileName, index);
+        SysOpenFile* openFileStructure = openFileManager->getFile(userFile->fileName, userFile->indexInSysOpenFileList);
         
         //Use SysOpenFile->file's writeAt() to write out the above buffer with size listed.
         int actualBytesWritten = openFileStructure->file->WriteAt(buffer, size, userFile->currOffsetInFile);
@@ -600,8 +599,7 @@ int readImpl() {
         //BEGIN HINTS
         
         //Now from openFileManger, find the SystemOpenFile data structure for this userFile.
-        int index = 0;
-        SysOpenFile* openFileStructure = openFileManager->getFile(userFile->fileName, index);
+        SysOpenFile* openFileStructure = openFileManager->getFile(userFile->fileName, userFile->indexInSysOpenFileList);
 
         //Use ReadAt() to read the file at selected offset to this system buffer buffer[]
         int actualBytesRead = openFileStructure->file->ReadAt(buffer, size, userFile->currOffsetInFile);
@@ -640,8 +638,7 @@ void closeImpl() {
         // BEGIN HINTS
 
         // Use openFileManager's getFile method to get a pointer to the system-wide SysOpenFile  data structure
-        int index = 0;
-        SysOpenFile* currSysFile = openFileManager->getFile(userFile->fileName, index);
+        SysOpenFile* currSysFile = openFileManager->getFile(userFile->fileName, userFile->indexInSysOpenFileList);
         
         // Call the close method in SysOpenFile
         currSysFile->closedBySingleProcess();
