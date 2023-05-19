@@ -124,13 +124,13 @@ void ProcessManager::join(int pid) {
 
 void ProcessManager::broadcast(int pid) {
 
-    //Lock* lock = lockList[pid]; //This line is needed when using a lock specific for pid
+    Lock* lock = lockList[pid]; //This line is needed when using a lock specific for pid
     Condition* condition = conditionList[pid];
     pcbStatuses[pid] = pcbList[pid]->status;
 
     if (condition != NULL) { // somebody is waiting on this process
         // BEGIN HINTS
-        // Wake up others
+        condition->Broadcast(lock);
         // END HINTS
     }
 }

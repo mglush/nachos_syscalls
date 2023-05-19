@@ -85,7 +85,7 @@ AddrSpace::AddrSpace(OpenFile *executable, PCB* newpcb)
             // virtual memory
 
     memoryManager->lock->Acquire();
-    DEBUG('a', "Initializing address space, num pages %d, size %d\n", 
+    fprintf(stderr, "Initializing address space, num pages %d, size %d\n", 
           numPages, size);
 
     if (numPages <= memoryManager->getNumFreePages()) {
@@ -150,10 +150,9 @@ AddrSpace::AddrSpace(const AddrSpace* other, PCB* newpcb) {
     // Copy all page table entries over, create associated PCB
     numPages = other->numPages;
     memoryManager->lock->Acquire();
-    DEBUG('a', "Initializing address space with num pages: %d.\n", numPages);
+    fprintf(stderr, "Initializing address space with num pages: %d.\n", numPages);
 
     if (numPages <= memoryManager->getNumFreePages()) {
-
         this->pcb = newpcb;
         pageTable = new TranslationEntry[numPages];
 
@@ -167,10 +166,10 @@ AddrSpace::AddrSpace(const AddrSpace* other, PCB* newpcb) {
         //Also (other->pageTable)[i] gives the i-th logical page table entry of "other" process.
         //Thus you will fill code inside the loop body of  for (int i = 0; i < numPages; i++) {  }
 
-
         memoryManager->lock->Release();
 
         machineLock->Acquire();
+
         //BEGIN HINTS
         //Copy page content of the other process to the new address space page by page to complete process content duplication
         //END HINTS
@@ -224,7 +223,7 @@ AddrSpace::InitRegisters()
 
     machineLock->Acquire();
     for (i = 0; i < NumTotalRegs; i++)
-  machine->WriteRegister(i, 0);
+        machine->WriteRegister(i, 0);
 
     // Initial program counter -- must be location of "Start"
     machine->WriteRegister(PCReg, 0); 
@@ -238,7 +237,7 @@ AddrSpace::InitRegisters()
    // accidentally reference off the end!
     machine->WriteRegister(StackReg, numPages * PageSize - 16);
     machineLock->Release();
-    DEBUG('a', "Initializing stack register to %d\n", numPages * PageSize - 16);
+    fprintf(stderr, "Initializing stack register to %d\n", numPages * PageSize - 16);
 }
 
 //----------------------------------------------------------------------
@@ -284,8 +283,7 @@ int AddrSpace::Translate(int virtualAddress) {
     if (virtualAddress < 0 || pageTableIndex > (int)numPages) {
         physicalAddress = -1;
     } else {
-        physicalAddress = 
-            pageTable[pageTableIndex].physicalPage * PageSize + offset;
+        physicalAddress = pageTable[pageTableIndex].physicalPage * PageSize + offset;
     }
 
     return physicalAddress;

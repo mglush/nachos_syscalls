@@ -36,12 +36,12 @@ class AddrSpace {
     PCB* getPCB();                      // returns the associated PCB
     bool isValid();                     // means we allocated addrspace success
     TranslationEntry *pageTable;	// Assume linear page table translation
-					// for now!
+					                          // for now!
 
   private:
     unsigned int numPages;		// Number of pages in the virtual 
-					// address space
-    PCB* pcb;                           // associated PCB
+					                      // address space
+    PCB* pcb;                 // associated PCB
 };
 
 #endif // ADDRSPACE_H

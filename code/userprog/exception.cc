@@ -470,6 +470,9 @@ int openImpl(char* filename) {
 
     // Either way, add it to the current PCB's open file list
     UserOpenFile currUserFile;
+
+    strcpy(currUserFile.fileName, filename);
+    currUserFile.indexInSysOpenFileList = index;
    //BEGIN HINTS 
    //Set up this UserOpenFile data structure
    // currUserFile.indeInSysOpenFileList should point to the index from openFileManager.
@@ -478,8 +481,6 @@ int openImpl(char* filename) {
    // See useropenfile.h and pcb.cc on UserOpenFile class and its methods.
    // See sysopenfile.h and openfilemanager.cc for SysOpenFile class and its methods.
     
-  
- 
     int currFileID = currentThread->space->getPCB()->addFile(currUserFile);
     return currFileID;
 }
