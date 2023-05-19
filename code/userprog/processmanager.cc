@@ -100,14 +100,18 @@ void ProcessManager::join(int pid) {
 
     lockForOtherProcess->Acquire();
     //BEGIN HINTS
+    
     //Increment  processesWaitingOnPID[pid].
     processesWaitingOnPID[pid]++;
+    
     //Conditional waiting on conditionForOtherProcess
-    while (pcbList[pid]->status == 2) {
+    while (pcbList[pid]->status == 2 || pcbList[pid]->status == 3) {
         conditionForOtherProcess->Wait(lockForOtherProcess);
     }
-    processesWaitingOnPID[pid]--;
+
     //Decrement   processesWaitingOnPID[pid].
+    processesWaitingOnPID[pid]--;
+
     //END HINTS
     
     if (processesWaitingOnPID[pid] == 0) {
@@ -133,7 +137,7 @@ void ProcessManager::broadcast(int pid) {
 
         // Wake up others
         condition->Broadcast(lock);
-        
+
         // END HINTS
     }
 }

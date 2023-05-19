@@ -259,11 +259,6 @@ void yieldImpl() {
     //and page table using AddrSpace::RestoreState()).
     //See addrspace.cc and thread.cc on how to save and restore states.
     //END HINTS
-    
-   
-  
- 
-
 
 }
 
@@ -312,14 +307,20 @@ int joinImpl() {
     currentThread->space->getPCB()->status = P_BLOCKED;
 
     // BEGIN HINTS 
-
+    fprintf(stderr, "ENTERING JOIN CALL!\n");
     // If the other process has  already exited, then just return its status
+    int currStatus = processManager->getStatus(otherPID);
+    if (currStatus != 2 || currStatus != 3) {
+        fprintf(stderr, "PROCESS ALREADY EXITED, JUS RETURN!\n");
+        return currStatus;
+    }
 
-
-    // Use proessManager to wait for the completion of  otherPID.
-    
+    // Use proessManager to wait for the completion of otherPID.
+    fprintf(stderr, "CALLING PROC MANAGER JOIN!\n");
+    processManager->join(otherPID);
 
     // Change the status of this process  in its PCB as P_RUNNING.
+    fprintf(stderr, "EXITED JOIN CALL FROM PROC MANAGER!\n");
     currentThread->space->getPCB()->status = P_RUNNING;
 
     // END HINTS
