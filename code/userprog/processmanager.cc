@@ -85,7 +85,6 @@ void ProcessManager::addProcess(PCB* pcb, int pid) {
 //-----------------------------------------------------------------------------
 
 void ProcessManager::join(int pid) {
-
     Lock* lockForOtherProcess = lockList[pid];
     if (lockForOtherProcess == NULL) {
         lockForOtherProcess = new Lock("");
@@ -105,16 +104,12 @@ void ProcessManager::join(int pid) {
     processesWaitingOnPID[pid]++;
     
     //Conditional waiting on conditionForOtherProcess
-    fprintf(stderr, "PROCESS %d ENTERING WAIT LOOP WITH STATUS %d\n", pid, getStatus(pid));
-    currentThread->space->getPCB()->status = P_BLOCKED;
-    if (pid != 0) {
-        while (getStatus(pid) != -1) {
-            fprintf(stderr, "PROCESS %d INSIDE OF LOOP WITH STATUS %d\n", pid, getStatus(pid));
-            conditionForOtherProcess->Wait(lockForOtherProcess);
-        }
+    fprintf(stderr, "PROCESS %d WAITING ON PROCESS %d ENTERING WAIT LOOP WITH STATUS %d\n", currentThread->space->getPCB()->getPID(), pid, getStatus(pid));
+    if (getStatus(pid) != -1) {
+        fprintf(stderr, "PROCESS %d WAITING ON PROCESS %d INSIDE THE WAIT LOOP WITH STATUS %d\n", currentThread->space->getPCB()->getPID(), pid, getStatus(pid));
+        conditionForOtherProcess->Wait(lockForOtherProcess);
     }
-    currentThread->space->getPCB()->status = P_RUNNING;
-    fprintf(stderr, "PROCESS %d EXITING WAIT LOOP WITH STATUS %d\n", pid, getStatus(pid));
+    fprintf(stderr, "PROCESS %d WAITING ON PROCESS %d EXITING WAIT LOOP WITH STATUS %d\n", currentThread->space->getPCB()->getPID(), pid, getStatus(pid));
 
     //Decrement   processesWaitingOnPID[pid].
     processesWaitingOnPID[pid]--;
@@ -124,6 +119,7 @@ void ProcessManager::join(int pid) {
     if (processesWaitingOnPID[pid] == 0) {
         processesBitMap.Clear(pid);
     }
+
     lockForOtherProcess->Release();
 }
 
@@ -136,19 +132,21 @@ void ProcessManager::join(int pid) {
 void ProcessManager::broadcast(int pid) {
 
     Lock* lock = lockList[pid]; //This line is needed when using a lock specific for pid
+    if (lock != NULL) lock->Acquire();
     Condition* condition = conditionList[pid];
     pcbStatuses[pid] = pcbList[pid]->status;
     fprintf(stderr, "PROCESS %d CALLED BROADCAST WITH STATUS %d\n", pid, getStatus(pid));
     if (condition != NULL) { // somebody is waiting on this process
         // BEGIN HINTS
-
         // Wake up others
         fprintf(stderr, "WE ACTUALLY BROADCAST, there are %d processes waiting on process %d\n", processesWaitingOnPID[pid], pid);
         condition->Broadcast(lock);
         fprintf(stderr, "WE ACTUALLY BROADCAST (after)\n");
-
         // END HINTS
+    } else {
+        fprintf(stderr, "Noone waiting on process %d; there are %d processes waiting\n", pid, processesWaitingOnPID[pid]);
     }
+    if (lock != NULL) lock->Release();
 }
 
 //-----------------------------------------------------------------------------
