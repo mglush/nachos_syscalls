@@ -146,10 +146,11 @@ Thread::Finish ()
     (void) interrupt->SetLevel(IntOff);
     ASSERT(this == currentThread);
 
-    DEBUG('t', "Finishing thread \"%s\"\n", getName());
+    fprintf(stderr, "Finishing thread \"%s\"\n", getName());
 
     threadToBeDestroyed = currentThread;
     Sleep();					// invokes SWITCH
+    fprintf(stderr, "SHOULD NOT BE REACHED!\n\n\n");
     // not reached
 }
 
@@ -215,13 +216,9 @@ Thread::Sleep ()
 
     ASSERT(this == currentThread);
     ASSERT(interrupt->getLevel() == IntOff);
-
-    DEBUG('t', "Sleeping thread \"%s\"\n", getName());
-
     status = BLOCKED;
     while ((nextThread = scheduler->FindNextToRun()) == NULL)
         interrupt->Idle();	// no one to run, wait for an interrupt
-
     scheduler->Run(nextThread); // returns when we've been signalled
 }
 

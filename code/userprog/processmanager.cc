@@ -88,14 +88,12 @@ void ProcessManager::join(int pid) {
 
     Lock* lockForOtherProcess = lockList[pid];
     if (lockForOtherProcess == NULL) {
-        fprintf(stderr, "CREATING NEW LOCK IN join()\n");
         lockForOtherProcess = new Lock("");
         lockList[pid] = lockForOtherProcess;
     }
 
     Condition* conditionForOtherProcess = conditionList[pid];
     if (conditionForOtherProcess == NULL) {
-        fprintf(stderr, "CREATING NEW CONDITION IN join()\n");
         conditionForOtherProcess = new Condition("");
         conditionList[pid] = conditionForOtherProcess;
     }
@@ -108,10 +106,14 @@ void ProcessManager::join(int pid) {
     
     //Conditional waiting on conditionForOtherProcess
     fprintf(stderr, "PROCESS %d ENTERING WAIT LOOP WITH STATUS %d\n", pid, getStatus(pid));
-    while (getStatus(pid) != -1) {
-        fprintf(stderr, "PROCESS %d INSIDE OF LOOP WITH STATUS %d\n", pid, getStatus(pid));
-        conditionForOtherProcess->Wait(lockForOtherProcess);
+    currentThread->space->getPCB()->status = P_BLOCKED;
+    if (pid != 0) {
+        while (getStatus(pid) != -1) {
+            fprintf(stderr, "PROCESS %d INSIDE OF LOOP WITH STATUS %d\n", pid, getStatus(pid));
+            conditionForOtherProcess->Wait(lockForOtherProcess);
+        }
     }
+    currentThread->space->getPCB()->status = P_RUNNING;
     fprintf(stderr, "PROCESS %d EXITING WAIT LOOP WITH STATUS %d\n", pid, getStatus(pid));
 
     //Decrement   processesWaitingOnPID[pid].
@@ -141,7 +143,7 @@ void ProcessManager::broadcast(int pid) {
         // BEGIN HINTS
 
         // Wake up others
-        fprintf(stderr, "WE ACTUALLY BROADCAST (before)\n");
+        fprintf(stderr, "WE ACTUALLY BROADCAST, there are %d processes waiting on process %d\n", processesWaitingOnPID[pid], pid);
         condition->Broadcast(lock);
         fprintf(stderr, "WE ACTUALLY BROADCAST (after)\n");
 

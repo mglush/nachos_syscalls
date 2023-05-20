@@ -116,6 +116,7 @@ void Lock::Acquire()
 {
     IntStatus oldLevel = interrupt->SetLevel(IntOff);	// disable interrupts
 
+
     // In the case of Acquire() being called by the thread that already owns it, do nothing
     if(!isHeldByCurrentThread())
     {
@@ -129,6 +130,7 @@ void Lock::Acquire()
         free = false;
         threadHolding = (void *)currentThread;
     }
+
 
     (void) interrupt->SetLevel(oldLevel);
 }
@@ -202,14 +204,17 @@ void Condition::Broadcast(Lock* conditionLock)
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
     if(conditionLock->isHeldByCurrentThread())
     {
+        fprintf(stderr, "ENTERING IF STATEMENT IN SYNCH.cc\n");
         Thread *thread;
         // While the queue is not empty, pull a thread off and wake it up
         while(!(queue->IsEmpty()))
         {
+            fprintf(stderr, "INSIDE OF THE QUEUE IN SYNCH.cc\n");
             thread = (Thread *)queue->Remove();
             // Redundant check that the thread is not null
             if(thread != NULL)
             {
+                fprintf(stderr, "THREAD SCHEDULED TO RUN AGAIN\n");
                 scheduler->ReadyToRun(thread);
             }
         }

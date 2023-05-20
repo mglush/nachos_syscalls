@@ -23,6 +23,7 @@
 #include "syscall.h"
 #include "machine.h"
 #include "pcb.h"
+#include<unistd.h>
 
 #define MAX_FILENAME_LEN 128
 #define USER_READ 0 // passed as type for userReadWrite
@@ -164,6 +165,8 @@ void ExceptionHandler(ExceptionType which)
 
 int forkImpl() {
 
+    fprintf(stderr, "\n\n\nGOD DAMN IT \n\n\n\n");
+
     // Create a new kernel thread
     Thread* childThread = new Thread("user-level child process");
 
@@ -185,8 +188,8 @@ int forkImpl() {
     // int currPID = currentThread->space->getPCB()->getPID();
     // int newPID = processManager->addProcess(newpcb, newPID);
     if (newPID == -1) {
-          fprintf(stderr, "Process %d is unable to fork a new process\n", currPID);
-          return -1;
+        fprintf(stderr, "Process %d is unable to fork a new process\n", currPID);
+        return -1;
     }
     
    
@@ -262,6 +265,8 @@ void yieldImpl() {
     //See addrspace.cc and thread.cc on how to save and restore states.
     //END HINTS
 
+    fprintf(stderr, "\n\n\nGOD DAMN IT \n\n\n\n");
+
 }
 
 //----------------------------------------------------------------------
@@ -291,12 +296,20 @@ void exitImpl() {
 
     
     //Delete the current space of this process
-    delete currentThread->space;
-    currentThread->space = NULL;
-    processManager->clearPID(currPID);
+    if (currPID != 0) {
+        fprintf(stderr, "THIS IS NOT PROCESS 0!!!\n");
+        delete currentThread->space;
+        currentThread->space = NULL;
+        processManager->clearPID(currPID);
 
-    (void) interrupt->SetLevel(oldLevel);
-    currentThread->Finish();
+        (void) interrupt->SetLevel(oldLevel);
+        currentThread->Finish();
+    } else {
+        fprintf(stderr, "THIS IS PROCESS 0!!!\n");
+        // otherwise we need to wait until all other processes finish and halt.
+        // HOW TO WAIT FOR ALL OTHER PROCESSES???
+        interrupt->Halt();
+    }
 }
 
 //----------------------------------------------------------------------
@@ -312,7 +325,7 @@ int joinImpl() {
     fprintf(stderr, "ENTERING JOIN CALL!\n");
     // If the other process has  already exited, then just return its status
     if (processManager->getStatus(otherPID) == -1) {
-        fprintf(stderr, "PROCESS ALREADY EXITED, JUS RETURN!\n");
+        fprintf(stderr, "PROCESS %d ALREADY EXITED, JUS RETURN!\n", otherPID);
         currentThread->space->getPCB()->status = P_RUNNING;
         return -1;
     }
