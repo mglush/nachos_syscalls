@@ -180,8 +180,10 @@ int forkImpl() {
     // END  HINTS
 
     
-    int currPID = 0;//Change it. 
-    int newPID = -1;//Change it
+    int currPID = 0;
+    int newPID = -1;
+    // int currPID = currentThread->space->getPCB()->getPID();
+    // int newPID = processManager->addProcess(newpcb, newPID);
     if (newPID == -1) {
           fprintf(stderr, "Process %d is unable to fork a new process\n", currPID);
           return -1;
@@ -309,10 +311,10 @@ int joinImpl() {
     // BEGIN HINTS 
     fprintf(stderr, "ENTERING JOIN CALL!\n");
     // If the other process has  already exited, then just return its status
-    int currStatus = processManager->getStatus(otherPID);
-    if (currStatus != 2 || currStatus != 3) {
+    if (processManager->getStatus(otherPID) == -1) {
         fprintf(stderr, "PROCESS ALREADY EXITED, JUS RETURN!\n");
-        return currStatus;
+        currentThread->space->getPCB()->status = P_RUNNING;
+        return -1;
     }
 
     // Use proessManager to wait for the completion of otherPID.
