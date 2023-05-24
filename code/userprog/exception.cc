@@ -164,9 +164,6 @@ void ExceptionHandler(ExceptionType which)
 //----------------------------------------------------------------------
 
 int forkImpl() {
-
-    fprintf(stderr, "\n\n\nGOD DAMN IT \n\n\n\n");
-
     // Create a new kernel thread
     Thread* childThread = new Thread("user-level child process");
 
@@ -255,18 +252,23 @@ void copyStateBack(int forkPC) {
 //----------------------------------------------------------------------
 
 void yieldImpl() {
-
     //BEGIN HINTS
+    
     //Save the corresponding user process's register states.
+    currentThread->space->SaveState();
+    currentThread->SaveUserState();
+    
     //This kernel thread yields using currentThread->Yield() to accomplish the context switch
+    currentThread->Yield();
+    
     //Once  this process is resumed for exectuion after yielding,
     //restore the corresponding user process's states (registers using Thread::RestoreUserState() 
     //and page table using AddrSpace::RestoreState()).
+    currentThread->RestoreUserState();
+    currentThread->space->RestoreState();
+
     //See addrspace.cc and thread.cc on how to save and restore states.
     //END HINTS
-
-    fprintf(stderr, "\n\n\nGOD DAMN IT \n\n\n\n");
-
 }
 
 //----------------------------------------------------------------------
@@ -280,7 +282,6 @@ void exitImpl() {
     int currPID = currentThread->space->getPCB()->getPID();
     
     fprintf(stderr, "Process %d exits with %d\n", currPID, status);
-
 
     //BEGIN HINTS 
 

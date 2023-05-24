@@ -146,11 +146,10 @@ Thread::Finish ()
     (void) interrupt->SetLevel(IntOff);
     ASSERT(this == currentThread);
 
-    fprintf(stderr, "Finishing thread \"%s\"\n", getName());
+    // fprintf(stderr, "Finishing thread \"%s\"\n", getName());
 
     threadToBeDestroyed = currentThread;
     Sleep();					// invokes SWITCH
-    fprintf(stderr, "SHOULD NOT BE REACHED!\n\n\n");
     // not reached
 }
 
