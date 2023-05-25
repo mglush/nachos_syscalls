@@ -170,31 +170,39 @@ int forkImpl() {
     int newProcessPC = machine->ReadRegister(4);
 
     // BEGIN HINTS
+
     // Use current-Thread->space to get the current PID
-    // See addrspace.cc on how to find PCB, and pcb.cc on how to find PID.
+    int currPID = currentThread->space->getPCB()->getPID();
+    
     // Use processManager to get a new PID. 
+    int newPID = processManager->getPID();
+    
     // Construct new PCB. See pcb.cc on how to create a new PCB.
+    PCB* newpcb = new PCB(newPID, currPID);
+
     // Set the new  process as P_RUNNING 
+    currentThread->space->getPCB()->status = P_RUNNING;
+    
     // Associate the new user process with this childThread
+    newpcb->process = childThread;
+    
     // Add this newly created process to processManager using addProcess.
+    processManager->addProcess(newpcb, newPID);
+    
     // END  HINTS
 
-    
-    int currPID = 0;
-    int newPID = -1;
-    // int currPID = currentThread->space->getPCB()->getPID();
-    // int newPID = processManager->addProcess(newpcb, newPID);
     if (newPID == -1) {
         fprintf(stderr, "Process %d is unable to fork a new process\n", currPID);
         return -1;
     }
-    
-   
-  
     // BEGIN HINTS
-    // Make a copy of the address space using AddrSpace::AddrSpace()
-    // END HINTS
 
+    // fprintf(stderr, "Boutta copy da addy space\n");
+    // Make a copy of the address space using AddrSpace::AddrSpace()
+    childThread->space = new AddrSpace(currentThread->space, newpcb);
+    fprintf(stderr, "We have done it.\n");
+    
+    // END HINTS
 
     int childNumPages = childThread->space->getNumPages();
     if (childThread->space->pageTable == NULL) {
@@ -205,14 +213,15 @@ int forkImpl() {
 
     // BEGIN HINTS
     // Save states of the new created process using SaveState.
+    childThread->space->SaveState();
+    childThread->SaveUserState();
     // Save states/registers of the corresponding childThread for context switch.
     // See addrspace.cc and thread.cc on how to save the states.
     // END HINTS
     
-
     // Mandatory printout of the forked process
-    //PCB* parentPCB = currentThread->space->getPCB();
-    //PCB* childPCB = childThread->space->getPCB();
+    PCB* parentPCB = currentThread->space->getPCB();
+    PCB* childPCB = childThread->space->getPCB();
     fprintf(stderr, "Process %d Fork: start at address 0x%x with %d pages memory\n",
         currPID, newProcessPC, childNumPages);
     
@@ -320,7 +329,6 @@ void exitImpl() {
 int joinImpl() {
 
     int otherPID = machine->ReadRegister(4);
-    currentThread->space->getPCB()->status = P_BLOCKED;
 
     // BEGIN HINTS 
     fprintf(stderr, "ENTERING JOIN CALL!\n");
@@ -337,7 +345,6 @@ int joinImpl() {
 
     // Change the status of this process  in its PCB as P_RUNNING.
     fprintf(stderr, "EXITED JOIN CALL FROM PROC MANAGER!\n");
-    currentThread->space->getPCB()->status = P_RUNNING;
 
     // END HINTS
     //
