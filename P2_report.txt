@@ -1,0 +1,8 @@
+UCSB CS170 Project 2
+By Michael Glushchenko
+
+Team: I worked alone on this project.
+
+Design explanation: Other than the yield function, every help stub kind of explained exactly what to do... I struggled heavily with the join function implementation, the program kept hanging. This was because I did not acquire a lock in the process manager broadcast function. Once I fixed that, I struggled a bit with the addrspace copy constructor, as I could not figure out the proper way to pass parameters into the bcopy function. Figured that out by looking through the entire addrspace.cc class, there were some examples of how it should be done. Overall, the fork and join functions gave me most trouble, but everything works and everything made sense. The file write read functions very simple used the userread and userwrite functions.
+
+Don't think there's anything else to add.
