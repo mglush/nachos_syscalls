@@ -301,25 +301,16 @@ void exitImpl() {
     processManager->broadcast(currPID);
     
     //See pcb.cc on how to get the exit code and see processmanager.cc on the above notification.
-    
     //END HINTS
 
     
     //Delete the current space of this process
-    if (currPID != 0) {
-        fprintf(stderr, "THIS IS NOT PROCESS 0!!!\n");
-        delete currentThread->space;
-        currentThread->space = NULL;
-        processManager->clearPID(currPID);
+    delete currentThread->space;
+    currentThread->space = NULL;
+    processManager->clearPID(currPID);
 
-        (void) interrupt->SetLevel(oldLevel);
-        currentThread->Finish();
-    } else {
-        fprintf(stderr, "THIS IS PROCESS 0!!!\n");
-        // otherwise we need to wait until all other processes finish and halt.
-        // HOW TO WAIT FOR ALL OTHER PROCESSES???
-        interrupt->Halt();
-    }
+    (void) interrupt->SetLevel(oldLevel);
+    currentThread->Finish();
 }
 
 //----------------------------------------------------------------------
